@@ -1,0 +1,10 @@
+export {default as Login} from './Login';
+export {default as Register} from './Register';
+export {default as ForgotPassword} from './ForgotPassword';
+export {default as ResetPassword} from './ResetPassword';
+export {default as Home} from './Home';
+export {default as Cashier} from './Cashier';
+export {default as Profile} from './Profile';
+export {default as AddProduct} from './AddProduct';
+export {default as Licence} from './Licence';
+export {default as Report} from './Report';
