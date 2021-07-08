@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   Text,
   StyleSheet,
@@ -7,128 +7,99 @@ import {
   TouchableOpacity,
   Image,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
 import {Button} from '../../components';
 import Search from '../../assets/icons/search.svg';
+import http from '../../helpers/http';
+import profile from '../../assets/images/profile.jpg';
 
-export default class AddProduct extends Component {
-  state = {
-    data: [
-      {
-        id: 1,
-        name: 'Cappucino',
-        image:
-          'https://images.unsplash.com/photo-1603966174899-06ac3f776eba?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=700&q=80',
-        price: 'Rp. 20.000',
-      },
-      {
-        id: 2,
-        name: 'Dalgona',
-        image:
-          'https://images.unsplash.com/photo-1589786742185-2b1da4a561b3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=634&q=80',
-        price: 'Rp. 25.000',
-      },
-      {
-        id: 3,
-        name: 'Milk Shake',
-        image:
-          'https://images.unsplash.com/photo-1592284441902-bd5fde3e6f87?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=634&q=80',
-        price: 'Rp. 15.000',
-      },
-      {
-        id: 4,
-        name: 'Green Tea',
-        image:
-          'https://images.unsplash.com/photo-1582785513054-8d1bf9d69c1a?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=675&q=80',
-        price: 'Rp. 25.000',
-      },
-      {
-        id: 5,
-        name: 'Smoothie',
-        image:
-          'https://images.unsplash.com/photo-1542115655-1ed9cbbf7140?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=752&q=80',
-        price: 'Rp. 35.000',
-      },
-      {
-        id: 6,
-        name: 'Sakura Latte',
-        image:
-          'https://images.unsplash.com/photo-1592284441672-6393fd6dd564?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=634&q=80',
-        price: 'Rp. 25.000',
-      },
-      {
-        id: 7,
-        name: 'Iced Tea',
-        image:
-          'https://images.unsplash.com/photo-1499638673689-79a0b5115d87?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=700&q=80',
-        price: 'Rp. 15.000',
-      },
-      {
-        id: 8,
-        name: 'Love Cocktails',
-        image:
-          'https://images.unsplash.com/photo-1486947799489-3fabdd7d32a6?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=675&q=80',
-        price: 'Rp. 15.000',
-      },
-      {
-        id: 9,
-        name: 'Jelly Dessert',
-        image:
-          'https://images.unsplash.com/photo-1560526860-1f0e56046c85?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=634&q=80',
-        price: 'Rp. 20.000',
-      },
-      {
-        id: 10,
-        name: 'Detox Water',
-        image:
-          'https://images.unsplash.com/photo-1500631195312-e3a9a5819f92?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=634&q=80',
-        price: 'Rp. 30.000',
-      },
-    ],
+const AddProduct = props => {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [order, setOrder] = useState({
+    item: [],
+    total: 0,
+  });
+  const fetch = async () => {
+    try {
+      const result = await http().get('product/');
+      setData(result.data.results);
+      setLoading(false);
+    } catch (e) {
+      console.log(e);
+    }
   };
-  render() {
-    return (
-      <View style={styles.container}>
-        <View style={styles.flex}>
-          <View style={styles.input}>
-            <Search />
-            <TextInput placeholder="Search..." style={styles.textInput} />
-          </View>
+  const addOrder = id => {
+    const filterData = data.filter(item => item.id === id);
+    const add = [...order.item, ...filterData];
+    const result = add.map(item => ({
+      ...item,
+      shop: 1,
+    }));
+    const total = add.map(x => x.price).reduce((a, b) => a + b);
+    setOrder({
+      item: result,
+      total: total,
+    });
+  };
+  useEffect(() => {
+    fetch();
+  }, []);
+  console.log(order);
+  return (
+    <View style={styles.container}>
+      <View style={styles.flex}>
+        <View style={styles.input}>
+          <Search />
+          <TextInput placeholder="Search..." style={styles.textInput} />
+        </View>
+        {loading ? (
+          <ActivityIndicator size="large" color="#000000" />
+        ) : (
           <FlatList
-            data={this.state.data}
+            data={data}
             showsVerticalScrollIndicator={false}
             renderItem={({item}) => (
               <View style={styles.row}>
                 <View style={styles.product}>
-                  <Image
-                    source={{
-                      uri: item.image,
-                    }}
-                    style={styles.productImage}
-                  />
+                  {item.image ? (
+                    <Image
+                      source={{
+                        uri: item.image,
+                      }}
+                      style={styles.productImage}
+                    />
+                  ) : (
+                    <Image source={profile} style={styles.productImage} />
+                  )}
                   <View>
                     <Text style={styles.productName}>{item.name}</Text>
                     <Text style={styles.productPrice}>{item.price}</Text>
                   </View>
                 </View>
-                <TouchableOpacity style={styles.card}>
+                <TouchableOpacity
+                  style={styles.card}
+                  onPress={() => addOrder(item.id)}>
                   <Text style={styles.plus}>+</Text>
                 </TouchableOpacity>
               </View>
             )}
             keyExtractor={item => item.id}
           />
-        </View>
-        <View style={styles.button}>
-          <Button
-            title="Pesanan • 3 Item • Rp. 50.000"
-            onPress={() => this.props.navigation.goBack()}
-          />
-        </View>
+        )}
       </View>
-    );
-  }
-}
+      <View style={styles.button}>
+        <Button
+          title={`Pesanan • ${order.item.length} Item • Rp. ${order.total}`}
+          onPress={() => props.navigation.goBack()}
+        />
+      </View>
+    </View>
+  );
+};
+
+export default AddProduct;
 
 const styles = StyleSheet.create({
   container: {

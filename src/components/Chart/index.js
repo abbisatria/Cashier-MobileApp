@@ -40,6 +40,7 @@ export default class BarChart extends PureComponent {
               width={GRAPH_BAR_WIDTH}
               height={y(item.value)}
               fill={colors.bars}
+              onPress={() => console.log(item.value)}
             />
           ))}
 

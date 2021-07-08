@@ -1,10 +1,37 @@
 import React, {Component} from 'react';
-import {Text, StyleSheet, View, ScrollView} from 'react-native';
+import {
+  Text,
+  StyleSheet,
+  View,
+  ScrollView,
+  ActivityIndicator,
+} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import Illustration from '../../assets/illustrations/login.svg';
 import {Button, Input} from '../../components';
+import {connect} from 'react-redux';
+import {login} from '../../redux/actions/auth';
+import {showMessage} from '../../helpers/showMessage';
 
-export default class Login extends Component {
+class Login extends Component {
+  state = {
+    email: '',
+    password: '',
+    loading: false,
+  };
+  submit = async () => {
+    this.setState({loading: true});
+    await this.props.login(this.state.email, this.state.password);
+    if (this.props.auth.token) {
+      this.setState({loading: false});
+      showMessage('Login Success', 'success');
+      this.props.navigation.replace('MainApp');
+    } else {
+      this.setState({loading: false});
+      showMessage(this.props.auth.errorMsg);
+    }
+  };
+
   render() {
     return (
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -13,17 +40,26 @@ export default class Login extends Component {
           <Text style={styles.title}>Log In</Text>
           <Text style={styles.subTitle}>Kelola kasirmu sekarang</Text>
         </View>
-        <Input placeholder="Email" type="email-address" />
+        <Input
+          placeholder="Email"
+          type="email-address"
+          onChange={email => this.setState({email})}
+        />
         <View style={styles.gap} />
-        <Input placeholder="Password" password />
+        <Input
+          placeholder="Password"
+          password
+          onChange={password => this.setState({password})}
+        />
         <TouchableOpacity
           onPress={() => this.props.navigation.navigate('ForgotPassword')}>
           <Text style={styles.text}>Lupa Password?</Text>
         </TouchableOpacity>
-        <Button
-          title="Log in"
-          onPress={() => this.props.navigation.navigate('MainApp')}
-        />
+        {this.state.loading ? (
+          <ActivityIndicator size="large" color="#000000" />
+        ) : (
+          <Button title="Log in" onPress={() => this.submit()} />
+        )}
         <TouchableOpacity
           onPress={() => this.props.navigation.navigate('Register')}>
           <Text style={styles.text}>Register</Text>
@@ -32,6 +68,14 @@ export default class Login extends Component {
     );
   }
 }
+
+const mapStateToProps = state => ({
+  auth: state.auth,
+});
+
+const mapDispatchToProps = {login};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Login);
 
 const styles = StyleSheet.create({
   container: {

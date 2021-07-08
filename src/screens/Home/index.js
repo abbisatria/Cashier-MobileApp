@@ -147,6 +147,5 @@ const styles = StyleSheet.create({
   chart: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 25,
   },
 });

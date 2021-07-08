@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, {useState} from 'react';
 import {
   Text,
   StyleSheet,
@@ -6,70 +6,89 @@ import {
   Image,
   Modal,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import PhotoProfile from '../../assets/images/profile.jpg';
 import Arrow from '../../assets/icons/arrow.svg';
 import {Button, Input} from '../../components';
+import {connect} from 'react-redux';
+import {logout} from '../../redux/actions/auth';
 
-export default class Profile extends Component {
-  state = {
-    modalVisible: false,
-  };
-  render() {
-    const {modalVisible} = this.state;
-    return (
-      <View style={styles.container}>
-        <View>
-          <View style={styles.header}>
-            <Image source={PhotoProfile} style={styles.image} />
-            <Text style={styles.name}>Abbi Satria</Text>
-            <Text style={styles.email}>abbisatria48@gmail.com</Text>
-          </View>
-          <TouchableOpacity onPress={() => this.setState({modalVisible: true})}>
-            <View style={styles.row}>
-              <Text style={styles.edit}>Edit Profile</Text>
-              <Arrow />
-            </View>
-          </TouchableOpacity>
+const Profile = props => {
+  const [modal, setModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  return (
+    <View style={styles.container}>
+      <View>
+        <View style={styles.header}>
+          <Image source={PhotoProfile} style={styles.image} />
+          <Text style={styles.name}>
+            {props.auth.user ? props.auth.user.name : ''}
+          </Text>
+          <Text style={styles.email}>
+            {props.auth.user ? props.auth.user.email : ''}
+          </Text>
+        </View>
+        <TouchableOpacity onPress={() => setModal(true)}>
           <View style={styles.row}>
-            <Text style={styles.edit}>Pusat Bantuan</Text>
+            <Text style={styles.edit}>Edit Profile</Text>
             <Arrow />
           </View>
-          <TouchableOpacity
-            onPress={() => this.props.navigation.navigate('Licence')}>
-            <View style={styles.row}>
-              <Text style={styles.edit}>Lisensi</Text>
-              <Arrow />
-            </View>
-          </TouchableOpacity>
+        </TouchableOpacity>
+        <View style={styles.row}>
+          <Text style={styles.edit}>Pusat Bantuan</Text>
+          <Arrow />
         </View>
+        <TouchableOpacity onPress={() => props.navigation.navigate('Licence')}>
+          <View style={styles.row}>
+            <Text style={styles.edit}>Lisensi</Text>
+            <Arrow />
+          </View>
+        </TouchableOpacity>
+      </View>
+      {loading ? (
+        <ActivityIndicator size="large" color="#000000" />
+      ) : (
         <Button
           title="Log Out"
-          onPress={() => this.props.navigation.navigate('Login')}
+          onPress={async () => {
+            setLoading(true);
+            await props.logout();
+            setLoading(false);
+            props.navigation.navigate('Login');
+          }}
         />
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => {
-            this.setState({modalVisible: !modalVisible});
-          }}>
-          <View style={styles.containerModal}>
-            <View style={styles.modalView}>
-              <Input placeholder="Nama" />
-              <View style={styles.gap} />
-              <Input placeholder="Email" />
-              <View style={styles.gap} />
-              <Input placeholder="Password" password />
-              <View style={styles.gap} />
-              <Button title="Edit Profile" />
-            </View>
+      )}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modal}
+        onRequestClose={() => {
+          setModal(!modal);
+        }}>
+        <View style={styles.containerModal}>
+          <View style={styles.modalView}>
+            <Input placeholder="Nama" />
+            <View style={styles.gap} />
+            <Input placeholder="Email" />
+            <View style={styles.gap} />
+            <Input placeholder="Password" password />
+            <View style={styles.gap} />
+            <Button title="Edit Profile" />
           </View>
-        </Modal>
-      </View>
-    );
-  }
-}
+        </View>
+      </Modal>
+    </View>
+  );
+};
+
+const mapStateToProps = state => ({
+  auth: state.auth,
+});
+
+const mapDispatchToProps = {logout};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Profile);
 
 const styles = StyleSheet.create({
   container: {

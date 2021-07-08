@@ -3,7 +3,7 @@ import {StyleSheet, View, TextInput, TouchableOpacity} from 'react-native';
 import Eye from '../../assets/icons/eye.svg';
 import EyeSlash from '../../assets/icons/eye-slash.svg';
 
-const Input = ({placeholder, type, password}) => {
+const Input = ({placeholder, type, password, onChange}) => {
   const [isPasswordShown, setIsPasswordShown] = useState(false);
   return (
     <View style={styles.input}>
@@ -12,6 +12,7 @@ const Input = ({placeholder, type, password}) => {
         keyboardType={type}
         secureTextEntry={password ? (isPasswordShown ? false : true) : false}
         style={styles.textInput}
+        onChangeText={onChange}
       />
       {password && (
         <TouchableOpacity onPress={() => setIsPasswordShown(!isPasswordShown)}>
